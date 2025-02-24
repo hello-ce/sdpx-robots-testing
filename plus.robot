@@ -1,32 +1,49 @@
 *** Settings ***
-Library           RequestsLibrary
+Library    RequestsLibrary
+Library    Collections
 
 *** Variables ***
-${BASE_URL}       http://192.168.2.11:5000/is_prime
+${BASE_URL}    http://192.168.2.11:5000
 
-*** Keywords ***
-Test Is_Prime Endpoint
-    [Arguments]    ${num1}    ${expected_status}
-    ${response}=    GET    ${BASE_URL}/${num1}    expected_status=${expected_status}
-    Run Keyword If    ${response.status_code} == ${expected_status}    Return From Keyword    ${response.json()}
-    Fail    Unexpected status code: ${response.status_code}
 
 *** Test Cases ***
-Test Integer Addition
-    ${json}=    Test Is_Prime Endpoint    17    200
-    Should Be Equal    ${json}[result]    ${true}
+Test Prime Number Returns True
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/7
+    Status Should Be    200    ${response}
+    ${result}=    Set Variable    ${response.json()}[result]
+    Should Be True    ${result}
 
-Test Decimal Addition
-    ${json}=    Test Is_Prime Endpoint    36    200
-    Should Be Equal    ${json}[result]    ${false}
+Test Non-Prime Number Returns False
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/4
+    Status Should Be    200    ${response}
+    ${result}=    Set Variable    ${response.json()}[result]
+    Should Not Be True    ${result}
 
-Test Negative Number
-    ${json}=    Test Is_Prime Endpoint    13219    200
-    Should Be Equal    ${json}[result]    ${true}
+Test Number One Returns False
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/1
+    Status Should Be    200    ${response}
+    ${result}=    Set Variable    ${response.json()}[result]
+    Should Not Be True    ${result}
 
-Test Charector
-    ${json}=    Test Is_Prime Endpoint    abc    400
+Test Zero Returns False
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/0
+    Status Should Be    200    ${response}
+    ${result}=    Set Variable    ${response.json()}[result]
+    Should Not Be True    ${result}
 
-Test Empty String
-    ${json}=    Test Is_Prime Endpoint    ""    400
-    
+Test Large Prime Number Returns True
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/97
+    Status Should Be    200    ${response}
+    ${result}=    Set Variable    ${response.json()}[result]
+    Should Be True    ${result}
+
+Test Invalid Input Returns 400
+    Create Session    prime_api    ${BASE_URL}
+    ${response}=    GET On Session    prime_api    /is_prime/abc    expected_status=400
+    Status Should Be    400    ${response}
+    Dictionary Should Contain Value    ${response.json()}    Input must be a valid integer
