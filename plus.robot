@@ -2,7 +2,7 @@
 Library           RequestsLibrary
 
 *** Variables ***
-${BASE_URL}       http://127.0.0.1:5001/is_prime
+${BASE_URL}       http://192.168.2.11:5000/is_prime
 
 *** Keywords ***
 Test Is_Prime Endpoint
