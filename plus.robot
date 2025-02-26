@@ -2,8 +2,7 @@
 Library           RequestsLibrary
 
 *** Variables ***
-${BASE_URL}       http://192.168.2.13:5000/is_prime
-
+${BASE_URL}       http://192.168.2.13:5000/cir_sur
 *** Keywords ***
 Test Is_Prime Endpoint
     [Arguments]    ${num1}    ${expected_status}
@@ -13,20 +12,13 @@ Test Is_Prime Endpoint
 
 *** Test Cases ***
 Test Integer Addition
-    ${json}=    Test Is_Prime Endpoint    17    200
-    Should Be Equal    ${json}[result]    ${true}
+    ${json}=    Test Is_Prime Endpoint    1    200
+    Should Be Equal    ${json}[result]    ${12.56}
 
 Test Decimal Addition
-    ${json}=    Test Is_Prime Endpoint    36    200
-    Should Be Equal    ${json}[result]    ${false}
+    ${json}=    Test Is_Prime Endpoint    -10    200
+    Should Be Equal    ${json}[result]    ${0}
 
 Test Negative Number
-    ${json}=    Test Is_Prime Endpoint    13219    200
-    Should Be Equal    ${json}[result]    ${true}
-
-Test Charector
-    ${json}=    Test Is_Prime Endpoint    abc    400
-
-Test Empty String
-    ${json}=    Test Is_Prime Endpoint    ""    400
-    
+    ${json}=    Test Is_Prime Endpoint    1.5    200
+    Should Be Equal    ${json}[result]    ${28.26}
