@@ -2,7 +2,9 @@
 Library           RequestsLibrary
 
 *** Variables ***
-${BASE_URL}       http://192.168.2.13:5000/cir_sur
+
+${BASE_URL}       http://192.168.2.11:5000/cir_sur
+
 *** Keywords ***
 Test Is_Prime Endpoint
     [Arguments]    ${num1}    ${expected_status}
