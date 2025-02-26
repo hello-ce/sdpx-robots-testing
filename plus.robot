@@ -1,22 +1,53 @@
 *** Settings ***
-Library    RequestsLibrary
-Library    Collections
+Library           RequestsLibrary
 
 *** Variables ***
-${BASE_URL}    http://192.168.2.13:5000
+${BASE_URL}       http://192.168.2.13:5000/plus
 
+*** Keywords ***
+Test Plus Endpoint
+    [Arguments]    ${num1}    ${num2}    ${expected_status}
+    ${response}=    GET    ${BASE_URL}/${num1}/${num2}    expected_status=${expected_status}
+    Run Keyword If    ${response.status_code} == ${expected_status}    Return From Keyword    ${response.json()}
+    Fail    Unexpected status code: ${response.status_code}
 
 *** Test Cases ***
-Test Prime Number Returns True
-    Create Session    prime_api    ${BASE_URL}
-    ${response}=    GET On Session    prime_api    /is_prime/7
-    Status Should Be    200    ${response}
-    ${result}=    Set Variable    ${response.json()}[result]
-    Should Be True    ${result}
+Test Integer Addition
+    ${json}=    Test Plus Endpoint    3    5    200
+    Should Be Equal    ${json}[result]    ${8}
 
-Test Non-Prime Number Returns False
-    Create Session    prime_api    ${BASE_URL}
-    ${response}=    GET On Session    prime_api    /is_prime/4
-    Status Should Be    200    ${response}
-    ${result}=    Set Variable    ${response.json()}[result]
-    Should Not Be True    ${result}
+Test Floating Point Addition
+    ${json}=    Test Plus Endpoint    3.5    2.5    200
+    Should Be Equal    ${json}[result]    ${6.0}
+
+Test Integer Result From Float Addition
+    ${json}=    Test Plus Endpoint    2.5    2.5    200
+    Should Be Equal    ${json}[result]    ${5}
+
+Test Negative Numbers
+    ${json}=    Test Plus Endpoint    -3    -7    200
+    Should Be Equal    ${json}[result]    ${-10}
+
+Test Mixed Positive And Negative
+    ${json}=    Test Plus Endpoint    -3    5    200
+    Should Be Equal    ${json}[result]    ${2}
+
+Test Zero Values
+    ${json}=    Test Plus Endpoint    0    0    200
+    Should Be Equal    ${json}[result]    ${0}
+
+Test Invalid First Number
+    ${json}=    Test Plus Endpoint    abc    5    400
+    Should Be Equal    ${json}[error_msg]    Inputs must be valid numbers
+
+Test Invalid Second Number
+    ${json}=    Test Plus Endpoint    5    xyz    400
+    Should Be Equal    ${json}[error_msg]    Inputs must be valid numbers
+
+Test Both Invalid Numbers
+    ${json}=    Test Plus Endpoint    abc    xyz    400
+    Should Be Equal    ${json}[error_msg]    Inputs must be valid numbers
+
+Test Special Characters
+    ${json}=    Test Plus Endpoint    @    ()    400
+    Should Be Equal    ${json}[error_msg]    Inputs must be valid numbers
